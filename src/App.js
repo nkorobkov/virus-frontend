@@ -1,26 +1,38 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import './App.scss';
+import Game from './components/Game';
+import Menu from './components/Menu';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+
+class App extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {activePage: 'menu'};
+        this.handleMenuClick = this.handleMenuClick.bind(this);
+        this.handleGameClick = this.handleGameClick.bind(this)
+
+    }
+
+    handleGameClick = () => {
+        this.setState({activePage: 'game'});
+    };
+
+    handleMenuClick = () => {
+        this.setState({activePage: 'menu'});
+    };
+
+    render() {
+        const activePage = this.state.activePage;
+        let element;
+
+        if (activePage === 'menu') {
+            element = <Menu onGameClick={this.handleGameClick}/>;
+        } else {
+            element = <Game onMenuClick={this.handleMenuClick}/>;
+        }
+        return element;
+    }
 }
 
-export default App;
+export default App
