@@ -1,18 +1,5 @@
 import React from "react";
-
-function resolveImagePath(state) {
-    let path = "/img/";
-    switch (state) {
-        case 0: path += "empty.png"; break;
-        case 1: path += "blueActive.png"; break;
-        case 2: path += "blueBase.png"; break;
-        case -1: path += "redActive.png"; break;
-        case -2: path += "redBase.png"; break;
-        default: path += "empty.png"; break;
-
-    }
-    return path;
-}
+import resolveImagePath from "../utils/styleUtils"
 
 class Cell extends React.Component {
     constructor(props) {
@@ -60,8 +47,8 @@ class Field extends React.Component {
     }
 
     render() {
-        this.fieldElement = [...Array(this.props.sizeh).keys()].map(number => {
-            return <FieldRow size={this.props.sizew} N={number} key={number}
+        this.fieldElement = [...Array(this.props.sizeH).keys()].map(number => {
+            return <FieldRow size={this.props.sizeW} N={number} key={number}
                              onCellClick={this.props.onCellClick} field={this.props.field}/>
         });
         return (
