@@ -25,6 +25,16 @@ class Game extends React.Component {
         };
     }
 
+    endGameIfNeeded(){
+        if (this.state.stepsLeft === 3 && !isValidMoveExists(this.state)) {
+            this.setState({
+                isGameEnded: true,
+                winner: -this.state.toMove,
+            });
+            console.log('game is ended,  winner: ', this.state.winner)
+        }
+    }
+
     handleCellClick = (h, w) => {
         if (isStepValid(this.state, h, w)) {
             const field = this.state.field.slice();
@@ -42,15 +52,7 @@ class Game extends React.Component {
                 toMove: toMove,
                 stepsLeft: stepsLeft,
                 history: history,
-            },() => {
-                if (this.state.stepsLeft === 3 && !isValidMoveExists(this.state)) {
-                    this.setState({
-                        isGameEnded: true,
-                        winner: -this.state.toMove,
-                    });
-                    console.log('game is ended,  winner: ', this.state.winner)
-                }
-            });
+            }, this.endGameIfNeeded);
 
         }
     };

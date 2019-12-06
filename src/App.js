@@ -1,5 +1,4 @@
 import React from 'react';
-import './App.scss';
 import Game from './components/Game';
 import Menu from './components/Menu';
 

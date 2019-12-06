@@ -2,14 +2,20 @@ import React, {Component} from "react";
 
 class InfoBar extends Component {
     render() {
-        return <section className="hero is-primary is-fullheight">
-            <div className="hero-head has-text-centered">
-                <section className="section">
+        return (
 
-                    <div className="button is-large is-outlined" onClick={this.props.onMenuClick}>Menu</div>
-                </section>
+            <div className='container'>
+                <div className="tile is-ancestor">
+                    <div className="tile is-parent is-12 is-fullheight">
+                        <div className="tile notification is-child is-info">
+
+                            <div className="button is-large is-outlined" onClick={this.props.onMenuClick}>Menu</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </section>;
+
+        )
     }
 }
 

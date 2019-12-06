@@ -1,0 +1,28 @@
+.menu-hero{
+  margin-top: 10%;
+}
+
+
+.menu-button{
+  display: block;
+  text-align: left;
+  margin-top: 20px;
+  font-weight: 500;
+  font-size: 0.7em;
+  background-color: $white;
+  color: $game-dark;
+  border-width: 2px !important;
+  border-style: solid !important;
+  border-color: $game-dark;
+  text-decoration: none !important;
+  border-radius: 5px;
+  &:visited {
+    color: $game-dark;
+    border-color: $white;
+  }
+  &:hover {
+    background-color: $game-dark;
+    color: $white;
+    border-color: $white;
+  }
+}

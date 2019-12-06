@@ -1,33 +1,7 @@
+@import "styles/constants";
 @import "~bulma/bulma.sass";
-
-.menu-hero{
-  margin-top: 10%;
-}
-
-.game-field{
-  width: 94%;
-  max-width: 88vh;
-
-  border: black dashed 5px;
-  margin: 3%;
-
-}
-
-.field-row{
-  width: 100%;
-  display: inline-block;
-  margin: 0;
-
-}
-.cell{
-  padding: 2px;
-  display: inline-block;
-  width: 12.5%;  // think about setting this from js, since it is 100/8
-  background: ghostwhite;
-}
-
-
-
+@import "styles/styles";
+@import "styles/gameStyles";
 
 body {
   margin: 0;
@@ -39,9 +13,5 @@ body {
   height: 100%;
   width: 100%;
   line-height: 0;
-}
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+  background: $white;
 }
