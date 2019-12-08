@@ -25,7 +25,7 @@ class Game extends React.Component {
         };
     }
 
-    endGameIfNeeded(){
+    endGameIfNeeded() {
         if (this.state.stepsLeft === 3 && !isValidMoveExists(this.state)) {
             this.setState({
                 isGameEnded: true,
@@ -60,17 +60,23 @@ class Game extends React.Component {
 
     render() {
         return (
+            <div className="container is-fluid game-container">
 
-            <div className="columns">
-                <div className="column is-three-quarters">
-                    <Field sizeH={this.sizeH} sizeW={this.sizeW} onCellClick={this.handleCellClick}
-                           field={this.state.field}/>
-                </div>
-                <div className="column">
-                    <InfoBar onMenuClick={this.props.onMenuClick} gameState={this.state}/>
+                <div className="tile is-ancestor">
+                    <div className="tile is-parent is-8">
+                        <div className="tile is-child is-game-tile">
+                            <Field sizeH={this.sizeH} sizeW={this.sizeW} onCellClick={this.handleCellClick}
+                                   field={this.state.field}/>
+                        </div>
+                    </div>
+                    <div className="tile is-parent">
+                        <div className="tile is-child is-info-bar ">
+                            <InfoBar onMenuClick={this.props.onMenuClick} gameState={this.state}/>
+
+                        </div>
+                    </div>
                 </div>
             </div>
-
 
         )
     }

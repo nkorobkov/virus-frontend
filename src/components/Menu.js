@@ -15,7 +15,7 @@ class Menu extends React.Component {
                 <div className="tile is-ancestor">
                     <div className='tile is-parent'>
                         <div className="tile is-parent is-12">
-                            <div className="tile is-child notification">
+                            <div className="tile is-child notification is-game-title">
                                 <div className="has-text-centered">
                                     <div className="title">Virus War Game</div>
                                     <div className="subtitle">Two-player game with easy rules and deep strategy</div>
@@ -33,7 +33,7 @@ class Menu extends React.Component {
                                 <div className="has-text-centered">
                                     <div className="title">Read Rules</div>
                                 </div>
-                                <a className="button menu-button">📖 Rules</a>
+                                <a className="button menu-button button-on-danger">📖 Rules</a>
                             </article>
                         </div>
 
@@ -43,9 +43,9 @@ class Menu extends React.Component {
                                 <div className="has-text-centered">
                                     <div className="title">Play With AI</div>
                                 </div>
-                                <a className="button menu-button">👶 Tony</a>
-                                <a className="button menu-button">🧘 Jessie</a>
-                                <a className="button menu-button">🤖 Max</a>
+                                <a className="button menu-button button-on-warning">👶 Tony</a>
+                                <a className="button menu-button button-on-warning">🤓 Jessie</a>
+                                <a className="button menu-button button-on-warning">🤖 Max</a>
                             </article>
                         </div>
                         <div className="tile is-parent ">
@@ -54,8 +54,8 @@ class Menu extends React.Component {
                                 <div className="has-text-centered">
                                     <div className="title">Play With a Friend</div>
                                 </div>
-                                <a className="button menu-button" onClick={this.props.onGameClick}>👯‍ Over the board</a>
-                                <a className="button menu-button">🎮 Online</a>
+                                <a className="button menu-button button-on-info" onClick={this.props.onGameClick}>🤜🤛 ‍ Over the board</a>
+                                <a className="button menu-button button-on-info">🎮 Online</a>
                             </article>
                         </div>
                     </div>
