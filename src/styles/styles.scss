@@ -26,6 +26,47 @@
   background-color: $info;
   color: $white;
   align-content: center;
+  line-height: 1;
+}
+
+.info-line{
+  padding: 0.25rem 1.25rem 1.25rem 1.25rem;
+  font-size: 150%;
+}
+
+.team-name{
+  border-radius: 3px;
+  padding: 0 0.25rem 0 0.25rem;
+  position: relative;
+  background-color: $game-white;
+  align-content: center;
+  border-style: solid;
+  border-width: 2px;
+}
+
+.blue-name{
+  color: $game-blue;
+  border-color: darken($game-blue, 20%);
+
+}
+
+.red-name{
+  color: $game-red;
+  border-color: $game-red;
+  //border-color: darken($game-red, 20%);
+}
+
+.move-dot{
+  border-radius: 20px;
+  margin-left: 5px;
+  margin-right: 5px;
+  width: 40px;
+  padding: 0;
+  position: relative;
+  background-color: $game-white;
+  align-content: center;
+  border-style: solid;
+  border-width: 2px;
 }
 
 
