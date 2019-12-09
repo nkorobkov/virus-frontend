@@ -1,17 +1,18 @@
-.menu-hero{
+.menu-hero {
   margin-top: 10%;
 }
-.game-container{
+
+.game-container {
   margin-top: 3%;
 }
 
-.is-game-title{
+.is-game-title {
 
   background-color: $game-dark;
   color: $white;
 }
 
-.is-game-tile{
+.is-game-tile {
   border-radius: 4px;
   padding: 1.25rem 1.25rem 1.25rem 1.25rem;
   position: relative;
@@ -19,7 +20,7 @@
   color: $white;
 }
 
-.is-info-bar{
+.is-info-bar {
   border-radius: 4px;
   padding: 1.25rem 1.25rem 1.25rem 1.25rem;
   position: relative;
@@ -29,12 +30,12 @@
   line-height: 1;
 }
 
-.info-line{
+.info-line {
   padding: 0.25rem 1.25rem 1.25rem 1.25rem;
   font-size: 150%;
 }
 
-.team-name{
+.team-name {
   border-radius: 3px;
   padding: 0 0.25rem 0 0.25rem;
   position: relative;
@@ -44,19 +45,19 @@
   border-width: 2px;
 }
 
-.blue-name{
+.blue-name {
   color: $game-blue;
   border-color: darken($game-blue, 20%);
 
 }
 
-.red-name{
+.red-name {
   color: $game-red;
   border-color: $game-red;
   //border-color: darken($game-red, 20%);
 }
 
-.move-dot{
+.move-dot {
   border-radius: 20px;
   margin-left: 5px;
   margin-right: 5px;
@@ -70,9 +71,7 @@
 }
 
 
-
-
-.menu-button{
+.menu-button {
   display: block;
   text-align: left;
   margin-top: 20px;
@@ -86,67 +85,72 @@
   border-radius: 5px;
 }
 
-.sidebar-button{
+.sidebar-button {
   display: block;
   text-align: center;
   font-weight: 500;
   font-size: 1.5em;
+  margin-top: 20px;
   background-color: $white;
   border-width: 2px !important;
   border-style: solid !important;
   text-decoration: none !important;
   border-radius: 5px;
-
-  bottom: 0;
 }
 
 
-.button-on-danger{
+.button-on-danger {
   $hov-col: darken($danger, 20%);
 
   color: $hov-col;
 
-  border-color:  $hov-col;
+  border-color: $hov-col;
+
   &:visited {
-    color:  $hov-col;
+    color: $hov-col;
     border-color: $white;
   }
+
   &:hover {
-    background-color:  $hov-col;
+    background-color: $hov-col;
     color: $white;
     border-color: $white;
   }
 }
 
-.button-on-info{
+.button-on-info {
   $hov-col: darken($info, 20%);
 
   color: $hov-col;
 
-  border-color:  $hov-col;
+  border-color: $hov-col;
+
   &:visited {
-    color:  $hov-col;
+    color: $hov-col;
     border-color: $white;
   }
+
   &:hover {
-    background-color:  $hov-col;
+    background-color: $hov-col;
     color: $white;
     border-color: $white;
   }
 }
 
-.button-on-warning{
+.button-on-warning {
   $hov-col: darken($warning, 20%);
 
   color: $hov-col;
 
-  border-color:  $hov-col;
+  border-color: $hov-col;
+
   &:visited {
-    color:  $hov-col;
+    color: $hov-col;
     border-color: $white;
   }
+
   &:hover {
-    background-color:  $hov-col;
+    background-color: $hov-col;
     color: $white;
     border-color: $white;
   }
