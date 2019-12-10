@@ -57,6 +57,46 @@
   //border-color: darken($game-red, 20%);
 }
 
+.rules-modal {
+  position: fixed;
+  top: 30px;
+  bottom: 30px;
+  right: 30px;
+  left: 30px;
+  border: solid 6px $game-dark;
+  background-color: $game-white;
+  color: $black;
+  line-height: 1;
+  border-radius: 5px;
+
+}
+
+@media screen and (max-width: 480px) {
+  .rules-modal {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+
+    background-color: $game-white;
+    color: $black;
+    line-height: 1;
+    border: solid 3px $game-dark;
+    border-radius: 5px;
+
+  }
+}
+
+.overlay {
+  background-color: rgba($game-dark, .7);
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+}
+
 .move-dot {
   border-radius: 20px;
   margin-left: 5px;
@@ -98,6 +138,71 @@
   border-radius: 5px;
 }
 
+.rules-button {
+  display: block;
+  position: absolute;
+  text-align: center;
+  font-weight: 500;
+  font-size: 1.3em;
+  background-color: $white;
+  border-width: 1.5px !important;
+  border-style: solid !important;
+  text-decoration: none !important;
+  border-radius: 5px;
+}
+
+.rules-back-button {
+  bottom: 20px;
+  right: 20px;
+  left: 20px;
+}
+
+.rules-next-button {
+  bottom: 80px;
+  right: 20px;
+  left: 53%;
+}
+
+.rules-prev-button {
+  bottom: 80px;
+  right: 53%;
+  left: 20px;
+}
+
+.rules-title {
+  text-align: center;
+  font-weight: 500;
+  font-size: 1.3em;
+  padding-top: 5px;
+}
+
+
+
+.rules-text {
+  ul {
+    list-style-type: square;
+    li {
+      padding: 5px;
+
+    }
+  }
+}
+
+
+.rules-image {
+  margin: 5px;
+  margin-left: 15%;
+
+  max-width: 70%;
+}
+
+@media screen and (min-width: 768px) {
+  .rules-image {
+    margin: 5px;
+    margin-left: 20px;
+    max-width: 50%;
+  }
+}
 
 .button-on-danger {
   $hov-col: darken($danger, 20%);
@@ -151,6 +256,12 @@
 
   &:hover {
     background-color: $hov-col;
+    color: $white;
+    border-color: $white;
+  }
+
+  &:disabled{
+    background-color: darken($game-dark, 20%);
     color: $white;
     border-color: $white;
   }

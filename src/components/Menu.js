@@ -1,12 +1,22 @@
 import React from "react";
+import ReactModal from "react-modal"
+import Rules from "./Rules"
+
+ReactModal.setAppElement('#root');
 
 class Menu extends React.Component {
 
     constructor(props) {
         super(props);
+        this.handleToggleRules = this.handleToggleRules.bind(this);
+        this.state = {
+            showRules: false
+        }
 
     }
-
+    handleToggleRules () {
+        this.setState({ showRules: !this.state.showRules });
+    }
 
     render() {
         return (
@@ -33,7 +43,7 @@ class Menu extends React.Component {
                                 <div className="has-text-centered">
                                     <div className="title">Read Rules</div>
                                 </div>
-                                <a className="button menu-button button-on-danger">📖 Rules</a>
+                                <a className="button menu-button button-on-danger" onClick={this.handleToggleRules}>📖 Rules</a>
                             </article>
                         </div>
 
@@ -54,15 +64,24 @@ class Menu extends React.Component {
                                 <div className="has-text-centered">
                                     <div className="title">Play With a Friend</div>
                                 </div>
-                                <a className="button menu-button button-on-info" onClick={this.props.onGameClick}>🤜🤛 ‍ Over the board</a>
+                                <a className="button menu-button button-on-info" onClick={this.props.onGameClick}>🤜🤛‍ Offline</a>
                                 <a className="button menu-button button-on-info">🎮 Online</a>
                             </article>
                         </div>
                     </div>
                 </div>
+
+                <ReactModal
+                    isOpen={this.state.showRules}
+                    onRequestClose={this.handleToggleRules}
+                    className="rules-modal"
+                    overlayClassName="overlay"
+                    shouldFocusAfterRender={false}
+                >
+                    <Rules onCloseClick={this.handleToggleRules}/>
+
+                </ReactModal>
             </div>
-
-
         )
     }
 }
