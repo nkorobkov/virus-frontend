@@ -1,4 +1,4 @@
-import React, {Component} from "react";
+import React from "react";
 import Field from "./Field";
 import InfoBar from "./InfoBar"
 import {isStepValid, getNextState, isValidMoveExists} from "../utils/gameEngine";
@@ -9,8 +9,7 @@ class Game extends React.Component {
         super(props);
         this.sizeH = 8;
         this.sizeW = 8;
-        this.handleCellClick = this.handleCellClick.bind(this);
-        this.handleRollBack = this.handleRollBack.bind(this);
+        this.playerTeam = 1;
         let field = new Array(this.sizeH * this.sizeW).fill(0);
         field[0] = 1;
         field[this.sizeH * this.sizeW - 1] = -1;
@@ -23,20 +22,57 @@ class Game extends React.Component {
             history: [],
             isGameEnded: false,
             winner: null,
+            backendConnected: false,
         };
+        this.handleCellClick = this.handleCellClick.bind(this);
+        this.handleRollBack = this.handleRollBack.bind(this);
     }
 
-    endGameIfNeeded() {
-        if (this.state.stepsLeft === 3 && !isValidMoveExists(this.state)) {
-            this.setState({
-                isGameEnded: true,
-                winner: -this.state.toMove,
-            });
+    componentDidMount() {
+        if (this.props.type === 'ai') {
+            this.socket = new WebSocket('ws://localhost:8000/ws/ai/' + this.props.aiType + '/');
+            this.socket.onopen = () => {
+                this.setState({backendConnected: true});
+                console.log('backend connected')
+            };
+            this.socket.onmessage = (msg) => {
+                this.handleReceivedMove(JSON.parse(msg.data));
+            };
+            this.socket.onclose = (msg) => {
+                this.setState({backendConnected: false})
+            }
+            //todo add reconect if smth goes wrong
+            
+        }
+        // if online
+    }
+
+    componentWillUnmount() {
+        console.log('unmounting, closing socket');
+        if (this.socket) {
+            this.socket.onclose = null;
+            this.socket.close()
         }
     }
 
+    async handleReceivedMove(data) {
+        if (this.state.toMove === this.playerTeam || this.state.isGameEnded) {
+            return;
+        }
+        let move = data.move;
+        if (move.length > this.state.stepsLeft) {
+            throw new Error("More moves than possible");
+        }
+        move.forEach(async (step) => {
+            if (isStepValid(this.state, step[0], step[1])) {
+                await this.makeStep(step[0], step[1]);
+                await this.switchTurnsIfNeeded();
+            }
+        })
+    }
+
     handleRollBack = () => {
-        if (this.state.history.length === 0) {
+        if (this.state.history.length === 0 || this.props.type !== 'offline') {
             // Initial state. Nothing to roll back
             return;
         }
@@ -51,7 +87,6 @@ class Game extends React.Component {
         const currState = field[move[0] * this.sizeW + move[1]]; // Hope it is not 0 (that would cause an error, but should be impossible)
         // Next state is 1 for -2 and 0 for (1, -1) so it is opposite sign and smaller modulo
         field[move[0] * this.sizeW + move[1]] = -Math.sign(currState) * (Math.abs(currState) - 1);
-
 
         if (stepsLeft > 3) {
             // We tried to roll back when stepsLeft ==  3 --> after roll back different team moves and has last move.
@@ -72,37 +107,74 @@ class Game extends React.Component {
             isGameEnded: isGameEnded,
             winner: winner,
         })
-
-
     };
 
-    handleCellClick = (h, w) => {
-        if (this.state.isGameEnded) {
+    handleCellClick = async (h, w) => {
+        const playerCantMoveNow = this.state.toMove !== this.playerTeam && this.props.type !== 'offline';
+        if (playerCantMoveNow || this.state.isGameEnded || !isStepValid(this.state, h, w)) {
             return;
         }
-        if (isStepValid(this.state, h, w)) {
-            const field = this.state.field.slice();
-            const history = this.state.history.slice();
-            let toMove = this.state.toMove;
-            let stepsLeft = this.state.stepsLeft - 1;
 
-            field[h * this.sizeW + w] = getNextState(field[h * this.sizeW + w], this.state.toMove);
-            history.push([h, w]);
+        await this.makeStep(h, w);
+        await this.switchTurnsIfNeeded();
+        await this.sendStateIfNeeded();
 
-            if (stepsLeft === 0) {
-                toMove = -toMove;
-                stepsLeft = 3;
-            }
-            this.setState({
-                field: field,
-                toMove: toMove,
-                stepsLeft: stepsLeft,
-                history: history,
-            }, this.endGameIfNeeded);
-
-        }
     };
 
+    switchTurnsIfNeeded() {
+        let stepsLeft = this.state.stepsLeft;
+        let toMove = this.state.toMove;
+        let status = this.state.status;
+
+        if (stepsLeft === 0) {
+            toMove = -toMove;
+            stepsLeft = 3;
+            if (this.props.type !== 'offline') {
+                // if not offline game change move source
+                status = status === 'user_moves' ? 'user_moved' : 'user_moves';
+            }
+            this.setState({
+                toMove: toMove,
+                stepsLeft: stepsLeft,
+                status: status,
+            }, this.endGameIfNeeded);
+        }
+    }
+
+    makeStep(h, w) {
+        const field = this.state.field.slice();
+        const history = this.state.history.slice();
+        let stepsLeft = this.state.stepsLeft - 1;
+
+        field[h * this.sizeW + w] = getNextState(field[h * this.sizeW + w], this.state.toMove);
+        history.push([h, w]);
+
+        this.setState({
+            field: field,
+            stepsLeft: stepsLeft,
+            history: history,
+        });
+
+    }
+
+    endGameIfNeeded() {
+        if (this.state.stepsLeft === 3 && !isValidMoveExists(this.state)) {
+            this.setState({
+                isGameEnded: true,
+                winner: -this.state.toMove,
+            });
+        }
+    }
+
+    sendStateIfNeeded() {
+        //  don't call it on invalid or not on time moves.
+        const aiMoves = this.props.type === 'ai' && this.playerTeam !== this.state.toMove;
+        const onlineGame = this.props.type === 'online';
+        if (aiMoves || onlineGame) {
+            this.socket.send(JSON.stringify(this.state));
+            console.log('state sent')
+        }
+    }
 
     render() {
         return (

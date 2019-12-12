@@ -54,7 +54,7 @@ class Rules extends React.Component {
                 }
 
             }
-        }
+        };
 
         this.onNext = this.onNext.bind(this);
         this.onPrev = this.onPrev.bind(this);
@@ -80,7 +80,7 @@ class Rules extends React.Component {
             <div className="container">
                 <div className="columns">
                     <div className="column is-5-tablet rules-image">
-                        <img src={this.state.data[this.state.currentSlide].imgSrc}/>
+                        <img src={this.state.data[this.state.currentSlide].imgSrc} alt="screen shot"/>
                     </div>
                     <div className="column rules-text">
                         {this.state.data[this.state.currentSlide].element}

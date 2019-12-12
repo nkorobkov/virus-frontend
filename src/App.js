@@ -9,12 +9,12 @@ class App extends React.Component {
         super(props);
         this.state = {activePage: 'menu'};
         this.handleMenuClick = this.handleMenuClick.bind(this);
-        this.handleGameClick = this.handleGameClick.bind(this)
+        this.handleNavigation = this.handleNavigation.bind(this)
 
     }
 
-    handleGameClick = () => {
-        this.setState({activePage: 'game'});
+    handleNavigation = (page) => {
+        this.setState({activePage: page});
     };
 
     handleMenuClick = () => {
@@ -24,13 +24,21 @@ class App extends React.Component {
     render() {
         const activePage = this.state.activePage;
         let element;
-
-        if (activePage === 'menu') {
-            element = <Menu onGameClick={this.handleGameClick}/>;
-        } else {
-            element = <Game onMenuClick={this.handleMenuClick}/>;
+        switch (activePage) {
+            case 'menu':
+                element = <Menu onNavigationClick={this.handleNavigation}/>;
+                break;
+            case 'tony':
+                element = <Game type='ai' aiType='tony' onMenuClick={this.handleMenuClick}/>;
+                break;
+            case 'offline':
+                element = <Game type='offline' onMenuClick={this.handleMenuClick}/>;
+                break;
+            default:
+                element = <Menu onNavigationClick={this.handleNavigation}/>;
+                break;
         }
-        return element;
+        return <div>{element}</div>;
     }
 }
 

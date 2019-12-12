@@ -2,9 +2,6 @@ import React from "react";
 import resolveImagePath from "../utils/styleUtils"
 
 class Cell extends React.Component {
-    constructor(props) {
-        super(props);
-    }
     render() {
         const img_path = resolveImagePath(this.props.state);
         return (
@@ -14,10 +11,6 @@ class Cell extends React.Component {
     }
 }
 class FieldRow extends React.Component {
-    constructor(props){
-        super(props);
-    }
-
     render() {
         const row = [...Array(this.props.size).keys()].map(number => {
             const h = this.props.N;
@@ -40,11 +33,6 @@ class FieldRow extends React.Component {
 }
 
 class Field extends React.Component {
-
-    constructor(props) {
-        super(props);
-
-    }
 
     render() {
         this.fieldElement = [...Array(this.props.sizeH).keys()].map(number => {

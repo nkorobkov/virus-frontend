@@ -43,7 +43,7 @@ class Menu extends React.Component {
                                 <div className="has-text-centered">
                                     <div className="title">Read Rules</div>
                                 </div>
-                                <a className="button menu-button button-on-danger" onClick={this.handleToggleRules}>📖 Rules</a>
+                                <div className="button menu-button button-on-danger" onClick={this.handleToggleRules}><span role="img" aria-label="book">📖</span> Rules</div>
                             </article>
                         </div>
 
@@ -53,9 +53,9 @@ class Menu extends React.Component {
                                 <div className="has-text-centered">
                                     <div className="title">Play With AI</div>
                                 </div>
-                                <a className="button menu-button button-on-warning">👶 Tony</a>
-                                <a className="button menu-button button-on-warning">🤓 Jessie</a>
-                                <a className="button menu-button button-on-warning">🤖 Max</a>
+                                <div className="button menu-button button-on-warning" onClick={this.props.onNavigationClick.bind(this, 'tony')}><span role="img" aria-label="easy">👶</span> Tony</div>
+                                <div className="button menu-button button-on-warning"><span role="img" aria-label="medium">🤓</span> Jessie</div>
+                                <div className="button menu-button button-on-warning"><span role="img"  aria-label="hard">🤖</span> Max</div>
                             </article>
                         </div>
                         <div className="tile is-parent ">
@@ -64,8 +64,8 @@ class Menu extends React.Component {
                                 <div className="has-text-centered">
                                     <div className="title">Play With a Friend</div>
                                 </div>
-                                <a className="button menu-button button-on-info" onClick={this.props.onGameClick}>🤜🤛‍ Offline</a>
-                                <a className="button menu-button button-on-info">🎮 Online</a>
+                                <div className="button menu-button button-on-info" onClick={this.props.onNavigationClick.bind(this, 'offline')}><span role="img" aria-label="offline">🤜🤛</span>‍ Offline</div>
+                                <div className="button menu-button button-on-info"><span role="img" aria-label="online">🎮</span> Online</div>
                             </article>
                         </div>
                     </div>
