@@ -54,8 +54,8 @@ class Menu extends React.Component {
                                     <div className="title">Play With AI</div>
                                 </div>
                                 <div className="button menu-button button-on-warning" onClick={this.props.onNavigationClick.bind(this, 'tony')}><span role="img" aria-label="easy">👶</span> Tony</div>
-                                <div className="button menu-button button-on-warning"><span role="img" aria-label="medium">🤓</span> Jessie</div>
-                                <div className="button menu-button button-on-warning"><span role="img"  aria-label="hard">🤖</span> Max</div>
+                                <div className="button menu-button button-on-warning" onClick={this.props.onNavigationClick.bind(this, 'jessie')}><span role="img" aria-label="medium">🤓</span> Jessie</div>
+                                <div className="button menu-button button-on-warning" onClick={this.props.onNavigationClick.bind(this, 'max')}><span role="img"  aria-label="hard">🤖</span> Max</div>
                             </article>
                         </div>
                         <div className="tile is-parent ">

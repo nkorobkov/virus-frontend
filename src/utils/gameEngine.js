@@ -99,7 +99,6 @@ const isValidMoveExists  = function (state) {
         for(let k=0; k<tmp_state.sizeW*tmp_state.sizeH; k++){
             if (isStepValid(tmp_state, index2H(k, tmp_state.sizeW),index2W(k, tmp_state.sizeW))){
                 found = true;
-                console.log('valid', k);
                 let stepped_field = tmp_state.field.slice();
                 stepped_field[k] = getNextState(stepped_field[k], tmp_state.toMove);
                 tmp_state.field = stepped_field;

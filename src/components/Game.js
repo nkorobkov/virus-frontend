@@ -30,26 +30,32 @@ class Game extends React.Component {
 
     componentDidMount() {
         if (this.props.type === 'ai') {
-            this.socket = new WebSocket('ws://localhost:8000/ws/ai/' + this.props.aiType + '/');
-            this.socket.onopen = () => {
-                this.setState({backendConnected: true});
-                console.log('backend connected')
-            };
-            this.socket.onmessage = (msg) => {
-                this.handleReceivedMove(JSON.parse(msg.data));
-            };
-            this.socket.onclose = (msg) => {
-                this.setState({backendConnected: false})
-            }
-            //todo add reconect if smth goes wrong
-            
+            this.setUpSocket('ws://localhost:8000/ws/ai/' + this.props.aiType + '/');
         }
         // if online
     }
 
+    setUpSocket = (url)=> {
+        console.log('connecting to the backend');
+        this.socket = new WebSocket(url);
+        this.socket.onopen = () => {
+            this.setState({backendConnected: true});
+            console.log('backend connected')
+        };
+        this.socket.onmessage = (msg) => {
+            this.handleReceivedMove(JSON.parse(msg.data));
+        };
+        this.socket.onclose = (msg) => {
+            console.log('Cant connect to the server with code:',msg.code,  'retrying in two secconds');
+            this.setState({backendConnected: false});
+            setTimeout(()=>{this.setUpSocket(url)}, 2000)
+        };
+    };
+
     componentWillUnmount() {
         console.log('unmounting, closing socket');
         if (this.socket) {
+            // remove reconnection logic before intentional socket termination.
             this.socket.onclose = null;
             this.socket.close()
         }
@@ -171,8 +177,13 @@ class Game extends React.Component {
         const aiMoves = this.props.type === 'ai' && this.playerTeam !== this.state.toMove;
         const onlineGame = this.props.type === 'online';
         if (aiMoves || onlineGame) {
-            this.socket.send(JSON.stringify(this.state));
-            console.log('state sent')
+            if (this.state.backendConnected){
+                this.socket.send(JSON.stringify(this.state));
+                console.log('state sent')
+            }else{
+                console.log('state not sent, retrying in two seconds');
+                setTimeout(()=>{this.sendStateIfNeeded()}, 2000)
+            }
         }
     }
 

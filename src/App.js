@@ -31,6 +31,12 @@ class App extends React.Component {
             case 'tony':
                 element = <Game type='ai' aiType='tony' onMenuClick={this.handleMenuClick}/>;
                 break;
+            case 'jessie':
+                element = <Game type='ai' aiType='jessie' onMenuClick={this.handleMenuClick}/>;
+                break;
+            case 'max':
+                element = <Game type='ai' aiType='max' onMenuClick={this.handleMenuClick}/>;
+                break;
             case 'offline':
                 element = <Game type='offline' onMenuClick={this.handleMenuClick}/>;
                 break;
