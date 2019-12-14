@@ -9,7 +9,6 @@ class Game extends React.Component {
         super(props);
         this.sizeH = 8;
         this.sizeW = 8;
-        this.playerTeam = 1;
         let field = new Array(this.sizeH * this.sizeW).fill(0);
         field[0] = 1;
         field[this.sizeH * this.sizeW - 1] = -1;
@@ -22,7 +21,8 @@ class Game extends React.Component {
             history: [],
             isGameEnded: false,
             winner: null,
-            backendConnected: false,
+            isBackendConnected: false,
+            playerTeam: 1,
         };
         this.handleCellClick = this.handleCellClick.bind(this);
         this.handleRollBack = this.handleRollBack.bind(this);
@@ -39,7 +39,7 @@ class Game extends React.Component {
         console.log('connecting to the backend');
         this.socket = new WebSocket(url);
         this.socket.onopen = () => {
-            this.setState({backendConnected: true});
+            this.setState({isBackendConnected: true});
             console.log('backend connected')
         };
         this.socket.onmessage = (msg) => {
@@ -47,7 +47,7 @@ class Game extends React.Component {
         };
         this.socket.onclose = (msg) => {
             console.log('Cant connect to the server with code:',msg.code,  'retrying in two secconds');
-            this.setState({backendConnected: false});
+            this.setState({isBackendConnected: false});
             setTimeout(()=>{this.setUpSocket(url)}, 2000)
         };
     };
@@ -62,7 +62,7 @@ class Game extends React.Component {
     }
 
     async handleReceivedMove(data) {
-        if (this.state.toMove === this.playerTeam || this.state.isGameEnded) {
+        if (this.state.toMove === this.state.playerTeam || this.state.isGameEnded) {
             return;
         }
         let move = data.move;
@@ -116,7 +116,7 @@ class Game extends React.Component {
     };
 
     handleCellClick = async (h, w) => {
-        const playerCantMoveNow = this.state.toMove !== this.playerTeam && this.props.type !== 'offline';
+        const playerCantMoveNow = this.state.toMove !== this.state.playerTeam && this.props.type !== 'offline';
         if (playerCantMoveNow || this.state.isGameEnded || !isStepValid(this.state, h, w)) {
             return;
         }
@@ -174,10 +174,10 @@ class Game extends React.Component {
 
     sendStateIfNeeded() {
         //  don't call it on invalid or not on time moves.
-        const aiMoves = this.props.type === 'ai' && this.playerTeam !== this.state.toMove;
+        const aiMoves = this.props.type === 'ai' && this.state.playerTeam !== this.state.toMove;
         const onlineGame = this.props.type === 'online';
         if (aiMoves || onlineGame) {
-            if (this.state.backendConnected){
+            if (this.state.isBackendConnected){
                 this.socket.send(JSON.stringify(this.state));
                 console.log('state sent')
             }else{
@@ -201,7 +201,7 @@ class Game extends React.Component {
                     <div className="tile is-parent">
                         <div className="tile is-child is-info-bar ">
                             <InfoBar onMenuClick={this.props.onMenuClick} onRollBack={this.handleRollBack}
-                                     gameState={this.state}/>
+                                     gameState={this.state} type={this.props.type}/>
 
                         </div>
                     </div>

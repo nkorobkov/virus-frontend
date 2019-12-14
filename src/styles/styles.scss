@@ -266,3 +266,24 @@
     border-color: $white;
   }
 }
+
+.connection-status{
+  margin-bottom: 15px;
+
+}
+
+.dot{
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.red{
+  background-color: $game-red;
+}
+
+
+.green{
+  background-color: $game-green;
+}

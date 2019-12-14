@@ -78,19 +78,28 @@ class MenuButton extends React.Component {
 class Hint extends React.Component {
     render() {
 
+        const sl = this.props.gameState.stepsLeft;
+        const tm = this.props.gameState.toMove;
         if (this.props.gameState.isGameEnded) {
             return (<div>
                     <div className="info-line">Team <TeamName id={this.props.gameState.winner}/> won!</div>
                 </div>
             )
         } else {
-            return (<div>
-                    <div className="info-line"><TeamName id={this.props.gameState.toMove}/> moves</div>
-                    <div className="info-line"> {this.props.gameState.stepsLeft} steps left.</div>
-                    <div className="info-line"><MovesBar n={this.props.gameState.stepsLeft}
-                                                         id={this.props.gameState.toMove}/></div>
-                </div>
-            )
+            if (this.props.type === 'offline' || tm === this.props.gameState.playerTeam) {
+                return (<div>
+                    {this.props.type === 'offline' ?
+                        <div className="info-line"><TeamName id={this.props.gameState.toMove}/> moves</div>
+                        :
+                        <div className="info-line">It's our move</div>
+                    }
+                    <div className="info-line"> {sl} step{sl === 1 ? '' : 's'} left</div>
+                    <div className="info-line"><MovesBar n={sl} id={tm}/></div>
+                </div>)
+            } else {
+                // it's not offline game and our opponent is thinking now
+                return <div className="info-line">Our opponent is thinking...</div>
+            }
         }
 
 
@@ -99,22 +108,52 @@ class Hint extends React.Component {
 
 class RollBackButton extends React.Component {
     render() {
-        return (
-            <div className="button sidebar-button button-on-info" onClick={this.props.onRollBack}>TakeBack</div>
-        )
+        if (this.props.shouldShow) {
+            return (
+                <div className="button sidebar-button button-on-info" onClick={this.props.onRollBack}>TakeBack</div>
+            )
+        }
+        return <div/>
     }
 }
 
+class ConnectionStatus extends React.Component {
+    render() {
+        if (this.props.type === 'offline') {
+            return <div/>
+        }
+
+        const lightClassBackend = this.props.isBackendConnected ? 'green' : 'red';
+        const lightClassOpponent = this.props.isBackendConnected ? 'green' : 'red';
+
+        let backend = <span><span
+            className={lightClassBackend + ' dot'}/> backend is {this.props.isBackendConnected ? '' : 'not '}connected</span>
+
+        let opponent = this.props.type === 'online' ?
+            <span><span
+                className={lightClassOpponent + 'dot'}/> opponent is {this.props.isBackendConnected ? '' : 'not '}connected</span> :
+            <span/>;
+
+
+        return (
+            <div className="connection-status">{backend}{opponent}</div>
+        )
+    }
+}
 
 class InfoBar extends Component {
 
 
     render() {
         return (
-            <div className="has-text-centered">
-                <Hint gameState={this.props.gameState}/>
-                <RollBackButton onRollBack={this.props.onRollBack}/>
-                <MenuButton gameState={this.props.gameState} onMenuClick={this.props.onMenuClick}/>
+            <div>
+                <ConnectionStatus isBackendConnected={this.props.gameState.isBackendConnected} type={this.props.type}/>
+                <div className="has-text-centered">
+                    <Hint gameState={this.props.gameState} type={this.props.type}/>
+                    <RollBackButton onRollBack={this.props.onRollBack} shouldShow={this.props.type === 'offline'}/>
+                    <MenuButton gameState={this.props.gameState} onMenuClick={this.props.onMenuClick}/>
+                </div>
+
             </div>
 
         )
