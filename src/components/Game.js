@@ -61,7 +61,7 @@ class Game extends React.Component {
         }
     }
 
-    async handleReceivedMove(data) {
+    handleReceivedMove(data) {
         if (this.state.toMove === this.state.playerTeam || this.state.isGameEnded) {
             return;
         }
@@ -72,7 +72,6 @@ class Game extends React.Component {
         move.forEach(async (step) => {
             if (isStepValid(this.state, step[0], step[1])) {
                 await this.makeStep(step[0], step[1]);
-                await this.switchTurnsIfNeeded();
             }
         })
     }
@@ -115,60 +114,57 @@ class Game extends React.Component {
         })
     };
 
-    handleCellClick = async (h, w) => {
+    handleCellClick = (h, w) => {
         const playerCantMoveNow = this.state.toMove !== this.state.playerTeam && this.props.type !== 'offline';
         if (playerCantMoveNow || this.state.isGameEnded || !isStepValid(this.state, h, w)) {
             return;
         }
-
-        await this.makeStep(h, w);
-        await this.switchTurnsIfNeeded();
-        await this.sendStateIfNeeded();
-
+        this.makeStep(h, w).then(this.sendStateIfNeeded.bind(this));
     };
 
-    switchTurnsIfNeeded() {
-        let stepsLeft = this.state.stepsLeft;
-        let toMove = this.state.toMove;
-        let status = this.state.status;
-
-        if (stepsLeft === 0) {
-            toMove = -toMove;
-            stepsLeft = 3;
-            if (this.props.type !== 'offline') {
-                // if not offline game change move source
-                status = status === 'user_moves' ? 'user_moved' : 'user_moves';
-            }
-            this.setState({
-                toMove: toMove,
-                stepsLeft: stepsLeft,
-                status: status,
-            }, this.endGameIfNeeded);
-        }
-    }
 
     makeStep(h, w) {
         const field = this.state.field.slice();
         const history = this.state.history.slice();
         let stepsLeft = this.state.stepsLeft - 1;
+        let toMove = this.state.toMove;
+
+        let winner = this.state.winner;
+        let isGameEnded = this.state.isGameEnded;
+
 
         field[h * this.sizeW + w] = getNextState(field[h * this.sizeW + w], this.state.toMove);
         history.push([h, w]);
 
-        this.setState({
-            field: field,
-            stepsLeft: stepsLeft,
-            history: history,
-        });
-    }
+        // Switch move
+        if (stepsLeft === 0) {
+            toMove = -toMove;
+            stepsLeft = 3;
 
-    endGameIfNeeded() {
-        if (this.state.stepsLeft === 3 && !isValidMoveExists(this.state)) {
-            this.setState({
-                isGameEnded: true,
-                winner: -this.state.toMove,
-            });
+            //check  if game ended:
+            let new_state = {... this.state};
+            new_state.field = field.slice();
+            new_state.history = history.slice();
+            new_state.stepsLeft = stepsLeft;
+            new_state.toMove = toMove;
+
+            if (!isValidMoveExists(new_state)){
+                //end game
+                isGameEnded = true;
+                winner = - toMove
+            }
         }
+
+        return new Promise((resolve) => {
+            this.setState({
+                toMove: toMove,
+                field: field,
+                stepsLeft: stepsLeft,
+                history: history,
+                isGameEnded: isGameEnded,
+                winner: winner,
+            }, resolve);
+        });
     }
 
     sendStateIfNeeded() {
