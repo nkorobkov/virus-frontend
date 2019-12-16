@@ -1,6 +1,7 @@
 import React from "react";
 import ReactModal from "react-modal"
 import Rules from "./Rules"
+import OnlineModal from "./OnlineModal"
 
 ReactModal.setAppElement('#root');
 
@@ -9,13 +10,18 @@ class Menu extends React.Component {
     constructor(props) {
         super(props);
         this.handleToggleRules = this.handleToggleRules.bind(this);
+        this.handleToggleOnline = this.handleToggleOnline.bind(this);
         this.state = {
-            showRules: false
+            showRules: false,
+            showOnline: false
         }
 
     }
     handleToggleRules () {
         this.setState({ showRules: !this.state.showRules });
+    }
+    handleToggleOnline () {
+        this.setState({ showOnline: !this.state.showOnline });
     }
 
     render() {
@@ -65,7 +71,7 @@ class Menu extends React.Component {
                                     <div className="title">Play With a Friend</div>
                                 </div>
                                 <div className="button menu-button button-on-info" onClick={this.props.onNavigationClick.bind(this, 'offline')}><span role="img" aria-label="offline">🤜🤛</span>‍ Offline</div>
-                                <div className="button menu-button button-on-info"><span role="img" aria-label="online">🎮</span> Online</div>
+                                <div className="button menu-button button-on-info" onClick={this.handleToggleOnline}><span role="img" aria-label="online">🎮</span> Online</div>
                             </article>
                         </div>
                     </div>
@@ -79,6 +85,16 @@ class Menu extends React.Component {
                     shouldFocusAfterRender={false}
                 >
                     <Rules onCloseClick={this.handleToggleRules}/>
+
+                </ReactModal>
+                <ReactModal
+                    isOpen={this.state.showOnline}
+                    onRequestClose={this.handleToggleOnline}
+                    className="rules-modal"
+                    overlayClassName="overlay"
+                    shouldFocusAfterRender={false}
+                >
+                    <OnlineModal onCloseClick={this.handleToggleOnline} createRoom={this.handleToggleOnline} joinRoom={this.handleToggleOnline}/>
 
                 </ReactModal>
             </div>

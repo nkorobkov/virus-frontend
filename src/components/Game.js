@@ -160,7 +160,6 @@ class Game extends React.Component {
             stepsLeft: stepsLeft,
             history: history,
         });
-
     }
 
     endGameIfNeeded() {
@@ -176,7 +175,7 @@ class Game extends React.Component {
         //  don't call it on invalid or not on time moves.
         const aiMoves = this.props.type === 'ai' && this.state.playerTeam !== this.state.toMove;
         const onlineGame = this.props.type === 'online';
-        if (aiMoves || onlineGame) {
+        if ((aiMoves && !this.state.isGameEnded) || onlineGame) {
             if (this.state.isBackendConnected){
                 this.socket.send(JSON.stringify(this.state));
                 console.log('state sent')
