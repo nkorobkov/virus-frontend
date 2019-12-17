@@ -32,6 +32,7 @@ class Game extends React.Component {
         if (this.props.type === 'ai') {
             this.setUpSocket('ws://ec2-18-188-144-80.us-east-2.compute.amazonaws.com/ws/ai/' + this.props.aiType + '/');
         }
+        this.timeouts = [];
         // if online
     }
 
@@ -48,7 +49,7 @@ class Game extends React.Component {
         this.socket.onclose = (msg) => {
             console.log('Cant connect to the server with code:',msg.code,  'retrying in two secconds');
             this.setState({isBackendConnected: false});
-            setTimeout(()=>{this.setUpSocket(url)}, 2000)
+            this.timeouts.push(setTimeout(()=>{this.setUpSocket(url)}, 2000))
         };
     };
 
@@ -59,6 +60,7 @@ class Game extends React.Component {
             this.socket.onclose = null;
             this.socket.close()
         }
+        this.timeouts.forEach(clearTimeout);
     }
 
     handleReceivedMove(data) {
@@ -177,7 +179,7 @@ class Game extends React.Component {
                 console.log('state sent')
             }else{
                 console.log('state not sent, retrying in two seconds');
-                setTimeout(()=>{this.sendStateIfNeeded()}, 2000)
+                this.timeouts.push(setTimeout(()=>{this.sendStateIfNeeded()}, 2000))
             }
         }
     }
