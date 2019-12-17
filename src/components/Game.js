@@ -30,7 +30,7 @@ class Game extends React.Component {
 
     componentDidMount() {
         if (this.props.type === 'ai') {
-            this.setUpSocket('ws://localhost:8000/ws/ai/' + this.props.aiType + '/');
+            this.setUpSocket('ws://ec2-18-188-144-80.us-east-2.compute.amazonaws.com/ws/ai/' + this.props.aiType + '/');
         }
         // if online
     }

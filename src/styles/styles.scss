@@ -287,3 +287,13 @@
 .green{
   background-color: $game-green;
 }
+
+.my-footer{
+  background-color: $game-white;
+  color: darken($game-yellow,  20%);
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 6rem 1.5rem 5rem;
+  line-height: 1rem;
+
+}

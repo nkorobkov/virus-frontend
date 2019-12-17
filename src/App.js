@@ -1,7 +1,7 @@
 import React from 'react';
 import Game from './components/Game';
 import Menu from './components/Menu';
-
+import Footer from './components/Footer';
 
 class App extends React.Component {
 
@@ -44,7 +44,12 @@ class App extends React.Component {
                 element = <Menu onNavigationClick={this.handleNavigation}/>;
                 break;
         }
-        return <div>{element}</div>;
+        return (
+            <div>
+                {element}
+                <Footer/>
+            </div>
+        )
     }
 }
 
