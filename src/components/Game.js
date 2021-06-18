@@ -3,6 +3,8 @@ import Field from "./Field";
 import InfoBar from "./InfoBar"
 import {isStepValid, getNextState, isValidMoveExists} from "../utils/gameEngine";
 
+const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+
 class Game extends React.Component {
 
     constructor(props) {
@@ -30,7 +32,8 @@ class Game extends React.Component {
 
     componentDidMount() {
         if (this.props.type === 'ai') {
-            this.setUpSocket('ws://ec2-18-188-144-80.us-east-2.compute.amazonaws.com/ws/ai/' + this.props.aiType + '/');
+            console.log('settin up socket at', 'ws://'+SERVER_URL+'/ws/ai/' + this.props.aiType + '/')
+            this.setUpSocket('ws://'+SERVER_URL+'/ws/ai/' + this.props.aiType + '/');
         }
         this.timeouts = [];
         // if online

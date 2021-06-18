@@ -28,14 +28,14 @@ class App extends React.Component {
             case 'menu':
                 element = <Menu onNavigationClick={this.handleNavigation}/>;
                 break;
-            case 'tony':
-                element = <Game type='ai' aiType='tony' onMenuClick={this.handleMenuClick}/>;
+            case 'easy':
+                element = <Game type='ai' aiType='easy' onMenuClick={this.handleMenuClick}/>;
                 break;
-            case 'jessie':
-                element = <Game type='ai' aiType='jessie' onMenuClick={this.handleMenuClick}/>;
+            case 'medium':
+                element = <Game type='ai' aiType='medium' onMenuClick={this.handleMenuClick}/>;
                 break;
-            case 'max':
-                element = <Game type='ai' aiType='max' onMenuClick={this.handleMenuClick}/>;
+            case 'hard':
+                element = <Game type='ai' aiType='hard' onMenuClick={this.handleMenuClick}/>;
                 break;
             case 'offline':
                 element = <Game type='offline' onMenuClick={this.handleMenuClick}/>;

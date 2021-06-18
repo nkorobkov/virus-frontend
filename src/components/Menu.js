@@ -3,6 +3,10 @@ import ReactModal from "react-modal"
 import Rules from "./Rules"
 import OnlineModal from "./OnlineModal"
 
+const EASY_AI_ENABLED = process.env?.REACT_APP_EASY_AI_ENABLED ?? false;
+const MEDIUM_AI_ENABLED = process.env?.REACT_APP_MEDIUM_AI_ENABLED ?? false;
+const HARD_AI_ENABLED = process.env?.REACT_APP_HARD_AI_ENABLED ?? false;
+
 ReactModal.setAppElement('#root');
 
 class Menu extends React.Component {
@@ -59,9 +63,10 @@ class Menu extends React.Component {
                                 <div className="has-text-centered">
                                     <div className="title">Play With AI</div>
                                 </div>
-                                <div className="button menu-button button-on-warning" onClick={this.props.onNavigationClick.bind(this, 'tony')}><span role="img" aria-label="easy">👶</span> Tony</div>
-                                <div className="button menu-button button-on-warning" onClick={this.props.onNavigationClick.bind(this, 'jessie')}><span role="img" aria-label="medium">🤓</span> Jessie</div>
-                                <div className="button menu-button button-on-warning" onClick={this.props.onNavigationClick.bind(this, 'max')}><span role="img"  aria-label="hard">🤖</span> Max</div>
+                                { EASY_AI_ENABLED ? <div className="button menu-button button-on-warning" onClick={this.props.onNavigationClick.bind(this, 'easy')}><span role="img" aria-label="easy">👶</span> Tony</div> : <div/>}
+                                { MEDIUM_AI_ENABLED ? <div className="button menu-button button-on-warning" onClick={this.props.onNavigationClick.bind(this, 'medium')} ><span role="img" aria-label="medium">🤓</span> Jessie</div>: <div/>}
+                                { HARD_AI_ENABLED ? <div className="button menu-button button-on-warning" onClick={this.props.onNavigationClick.bind(this, 'hard')} ><span role="img"  aria-label="hard">🤖</span> Max</div>: <div/>}
+                                { !EASY_AI_ENABLED && !MEDIUM_AI_ENABLED && !HARD_AI_ENABLED ? <div className="label"> <br/>No AI backends are enabled at the moment :(</div>:<div/>}
                             </article>
                         </div>
                         <div className="tile is-parent ">
@@ -71,7 +76,7 @@ class Menu extends React.Component {
                                     <div className="title">Play With a Friend</div>
                                 </div>
                                 <div className="button menu-button button-on-info" onClick={this.props.onNavigationClick.bind(this, 'offline')}><span role="img" aria-label="offline">🤜🤛</span>‍ Offline</div>
-                                <div className="button menu-button button-on-info" onClick={this.handleToggleOnline}><span role="img" aria-label="online">🎮</span> Online</div>
+                                {/*<div className="button menu-button button-on-info" onClick={this.handleToggleOnline}><span role="img" aria-label="online">🎮</span> Online</div>*/}
                             </article>
                         </div>
                     </div>
