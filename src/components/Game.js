@@ -32,8 +32,7 @@ class Game extends React.Component {
 
     componentDidMount() {
         if (this.props.type === 'ai') {
-            console.log('settin up socket at', 'ws://'+SERVER_URL+'/ws/ai/' + this.props.aiType + '/')
-            this.setUpSocket('ws://'+SERVER_URL+'/ws/ai/' + this.props.aiType + '/');
+            this.setUpSocket('wss://'+SERVER_URL+'/ws/ai/' + this.props.aiType + '/');
         }
         this.timeouts = [];
         // if online
