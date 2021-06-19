@@ -2,8 +2,7 @@ import React from "react";
 import Field from "./Field";
 import InfoBar from "./InfoBar"
 import {isStepValid, getNextState, isValidMoveExists} from "../utils/gameEngine";
-
-const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+import {SERVER_URL, USE_SSL} from "../utils/constants";
 
 class Game extends React.Component {
 
@@ -24,6 +23,7 @@ class Game extends React.Component {
             isGameEnded: false,
             winner: null,
             isBackendConnected: false,
+            isOpponentConnected: false,
             playerTeam: 1,
         };
         this.handleCellClick = this.handleCellClick.bind(this);
@@ -31,22 +31,25 @@ class Game extends React.Component {
     }
 
     componentDidMount() {
+        const protocol = (USE_SSL ? 'wss://' : 'ws://')
         if (this.props.type === 'ai') {
-            this.setUpSocket('wss://'+SERVER_URL+'/ws/ai/' + this.props.aiType + '/');
+            this.setUpSocket(protocol+SERVER_URL+'/ws/ai/' + this.props.aiType + '/');
         }
         this.timeouts = [];
-        // if online
+        if (this.props.type === 'online') {
+            this.setUpSocket(protocol+SERVER_URL+'/ws/room/' + (this.props.roomId || '') + '?team='+this.props.team );
+        }
     }
 
     setUpSocket = (url)=> {
-        console.log('connecting to the backend');
+        console.log('connecting to the backend', url);
         this.socket = new WebSocket(url);
         this.socket.onopen = () => {
             this.setState({isBackendConnected: true});
             console.log('backend connected')
         };
         this.socket.onmessage = (msg) => {
-            this.handleReceivedMove(JSON.parse(msg.data));
+            this.handleSocketData(JSON.parse(msg.data));
         };
         this.socket.onclose = (msg) => {
             console.log('Cant connect to the server with code:',msg.code,  'retrying in two secconds');
@@ -65,8 +68,19 @@ class Game extends React.Component {
         this.timeouts.forEach(clearTimeout);
     }
 
+    handleSocketData = async (data) => {
+        console.log("handling received data", data)
+        if (data['type'] === 'move'){
+            await this.handleReceivedMove(data)
+        }
+        if (data['type'] === 'stateUpdate'){
+            await this.setState(data['state'])
+        }
+    }
+
     handleReceivedMove(data) {
         if (this.state.toMove === this.state.playerTeam || this.state.isGameEnded) {
+            console.log("move received when not expected")
             return;
         }
         let move = data.move;
@@ -118,16 +132,17 @@ class Game extends React.Component {
         })
     };
 
-    handleCellClick = (h, w) => {
+    handleCellClick = async (h, w) => {
         const playerCantMoveNow = this.state.toMove !== this.state.playerTeam && this.props.type !== 'offline';
         if (playerCantMoveNow || this.state.isGameEnded || !isStepValid(this.state, h, w)) {
             return;
         }
-        this.makeStep(h, w).then(this.sendStateIfNeeded.bind(this));
+        await this.makeStep(h, w)
+        await this.sendStateIfNeeded();
     };
 
 
-    makeStep(h, w) {
+makeStep(h, w) {
         const field = this.state.field.slice();
         const history = this.state.history.slice();
         let stepsLeft = this.state.stepsLeft - 1;
@@ -146,7 +161,7 @@ class Game extends React.Component {
             stepsLeft = 3;
 
             //check  if game ended:
-            let new_state = {... this.state};
+            let new_state = {...this.state};
             new_state.field = field.slice();
             new_state.history = history.slice();
             new_state.stepsLeft = stepsLeft;
@@ -171,13 +186,13 @@ class Game extends React.Component {
         });
     }
 
-    sendStateIfNeeded() {
+    sendStateIfNeeded = async () => {
         //  don't call it on invalid or not on time moves.
         const aiMoves = this.props.type === 'ai' && this.state.playerTeam !== this.state.toMove;
         const onlineGame = this.props.type === 'online';
         if ((aiMoves && !this.state.isGameEnded) || onlineGame) {
             if (this.state.isBackendConnected){
-                this.socket.send(JSON.stringify(this.state));
+                await this.socket.send(JSON.stringify(this.state));
                 console.log('state sent')
             }else{
                 console.log('state not sent, retrying in two seconds');

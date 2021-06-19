@@ -116,6 +116,14 @@ class RollBackButton extends React.Component {
         return <div/>
     }
 }
+class RoomId extends React.Component {
+    render() {
+        if (this.props.type === 'online') {
+            return <div>Room ID: {this.props.roomId}</div>
+        }
+        return <div/>
+    }
+}
 
 class ConnectionStatus extends React.Component {
     render() {
@@ -124,19 +132,19 @@ class ConnectionStatus extends React.Component {
         }
 
         const lightClassBackend = this.props.isBackendConnected ? 'green' : 'red';
-        const lightClassOpponent = this.props.isBackendConnected ? 'green' : 'red';
+        const lightClassOpponent = this.props.isOpponentConnected ? 'green' : 'red';
 
         let backend = <span><span
             className={lightClassBackend + ' dot'}/> backend is {this.props.isBackendConnected ? '' : 'not '}connected</span>
 
         let opponent = this.props.type === 'online' ?
             <span><span
-                className={lightClassOpponent + 'dot'}/> opponent is {this.props.isBackendConnected ? '' : 'not '}connected</span> :
+                className={lightClassOpponent + ' dot'}/> opponent is {this.props.isBackendConnected ? '' : 'not '}connected</span> :
             <span/>;
 
 
         return (
-            <div className="connection-status">{backend}{opponent}</div>
+            <div className="connection-status">{backend}<br/>{opponent}</div>
         )
     }
 }
@@ -148,6 +156,7 @@ class InfoBar extends Component {
         return (
             <div>
                 <ConnectionStatus isBackendConnected={this.props.gameState.isBackendConnected} type={this.props.type}/>
+                <RoomId roomId={this.props.gameState.roomId} type={this.props.type}></RoomId>
                 <div className="has-text-centered">
                     <Hint gameState={this.props.gameState} type={this.props.type}/>
                     <RollBackButton onRollBack={this.props.onRollBack} shouldShow={this.props.type === 'offline'}/>

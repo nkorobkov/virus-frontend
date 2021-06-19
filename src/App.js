@@ -17,6 +17,14 @@ class App extends React.Component {
         this.setState({activePage: page});
     };
 
+    handleOnlineGame = (team, roomId) => {
+        this.setState({
+            activePage: 'online',
+            team: team,
+            roomId: roomId,
+        });
+    };
+
     handleMenuClick = () => {
         this.setState({activePage: 'menu'});
     };
@@ -26,7 +34,7 @@ class App extends React.Component {
         let element;
         switch (activePage) {
             case 'menu':
-                element = <Menu onNavigationClick={this.handleNavigation}/>;
+                element = <Menu onNavigationClick={this.handleNavigation} onOnlineClick={this.handleOnlineGame}/>;
                 break;
             case 'easy':
                 element = <Game type='ai' aiType='easy' onMenuClick={this.handleMenuClick}/>;
@@ -37,11 +45,14 @@ class App extends React.Component {
             case 'hard':
                 element = <Game type='ai' aiType='hard' onMenuClick={this.handleMenuClick}/>;
                 break;
+            case 'online':
+                element = <Game type='online' roomId={this.state.roomId} team={this.state.team} onMenuClick={this.handleMenuClick}/>;
+                break;
             case 'offline':
                 element = <Game type='offline' onMenuClick={this.handleMenuClick}/>;
                 break;
             default:
-                element = <Menu onNavigationClick={this.handleNavigation}/>;
+                element = <Menu onNavigationClick={this.handleNavigation} onOnlineClick={this.handleOnlineGame}/>;
                 break;
         }
         return (
