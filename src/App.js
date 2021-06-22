@@ -37,19 +37,19 @@ class App extends React.Component {
                 element = <Menu onNavigationClick={this.handleNavigation} onOnlineClick={this.handleOnlineGame}/>;
                 break;
             case 'easy':
-                element = <Game type='ai' aiType='easy' onMenuClick={this.handleMenuClick}/>;
+                element = <Game type='ai' aiType='easy' team={1} onMenuClick={this.handleMenuClick}/>;
                 break;
             case 'medium':
-                element = <Game type='ai' aiType='medium' onMenuClick={this.handleMenuClick}/>;
+                element = <Game type='ai' aiType='medium' team={1} onMenuClick={this.handleMenuClick}/>;
                 break;
             case 'hard':
-                element = <Game type='ai' aiType='hard' onMenuClick={this.handleMenuClick}/>;
+                element = <Game type='ai' aiType='hard' team={1} onMenuClick={this.handleMenuClick}/>;
                 break;
             case 'online':
                 element = <Game type='online' roomId={this.state.roomId} team={this.state.team} onMenuClick={this.handleMenuClick}/>;
                 break;
             case 'offline':
-                element = <Game type='offline' onMenuClick={this.handleMenuClick}/>;
+                element = <Game type='offline' team={1} onMenuClick={this.handleMenuClick}/>;
                 break;
             default:
                 element = <Menu onNavigationClick={this.handleNavigation} onOnlineClick={this.handleOnlineGame}/>;
