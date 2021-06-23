@@ -25,4 +25,6 @@ jobs:
     - name: deploy to gh pages
       if: github.ref == 'refs/heads/master'
       run: | 
+        git config --global user.name "Virus War CI"
+        git config --global user.email "nikita-ci@github.com"
         npm run deploy
