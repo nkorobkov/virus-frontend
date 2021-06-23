@@ -30,6 +30,14 @@
   line-height: 1;
 }
 
+.info-background {
+  background-color: $info;
+}
+
+.danger-background {
+  background-color: $danger;
+}
+
 .info-line {
   padding: 0.25rem 1.25rem 1.25rem 1.25rem;
   font-size: 150%;
