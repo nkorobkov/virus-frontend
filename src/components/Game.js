@@ -91,7 +91,6 @@ class Game extends React.Component {
   }
 
   handleSocketData = async (data) => {
-    console.log("handling received data", data);
     if (data["type"] === "move") {
       await this.handleReceivedMove(data);
     }
@@ -247,7 +246,6 @@ class Game extends React.Component {
     if (aiMoves && !this.state.isGameEnded) {
       if (this.state.isBackendConnected) {
         await this.socket.send(JSON.stringify(this.state));
-        console.log("state sent for ai game");
       } else {
         console.log("state not sent, retrying in two seconds");
         this.timeouts.push(
@@ -266,7 +264,6 @@ class Game extends React.Component {
         state: this.state,
       })
     );
-    console.log("state move and updated state to opponent");
   };
 
   resetStateFromField = async (data) => {
@@ -284,7 +281,6 @@ class Game extends React.Component {
       toMove: toMove,
       stepsLeft: stepsLeft,
     };
-    console.log(newState);
     if (!isValidMoveExists({ ...this.state, ...newState })) {
       //end game
       isGameEnded = true;
