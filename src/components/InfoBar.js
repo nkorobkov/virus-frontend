@@ -55,7 +55,7 @@ class MenuButton extends React.Component {
       return (
         <div>
           <div
-            className="button sidebar-button button-on-info"
+            className={"button sidebar-button " + this.props.colorClass}
             onClick={this.props.onMenuClick}
           >
             Menu
@@ -71,13 +71,13 @@ class MenuButton extends React.Component {
           </div>
           <div className="columns">
             <span
-              className="column button sidebar-button button-on-info"
+              className={"column button sidebar-button " + this.props.colorClass}
               onClick={this.props.onMenuClick}
             >
               Yes
             </span>
             <span
-              className="column button sidebar-button button-on-info"
+              className={"column button sidebar-button " + this.props.colorClass}
               onClick={this.pressed}
             >
               No
@@ -89,7 +89,7 @@ class MenuButton extends React.Component {
       return (
         <div>
           <div
-            className="button sidebar-button button-on-info"
+            className={"button sidebar-button " + this.props.colorClass}
             onClick={this.pressed}
           >
             Menu
@@ -145,7 +145,7 @@ class RollBackButton extends React.Component {
     if (this.props.shouldShow) {
       return (
         <div
-          className="button sidebar-button button-on-info"
+          className={"button sidebar-button " + this.props.colorClass}
           onClick={this.props.onRollBack}
         >
           TakeBack
@@ -164,7 +164,7 @@ class PlayAgainButton extends React.Component {
     if (this.props.shouldShow) {
       return (
         <div
-          className="button sidebar-button button-on-info"
+          className={"button sidebar-button " + this.props.colorClass}
           disabled={!isEnabled}
           onClick={this.props.onPlayAgain}
         >
@@ -247,6 +247,10 @@ class ConnectionStatus extends React.Component {
 }
 
 class InfoBar extends Component {
+
+  getButtonClass = () => {
+    return this.props.gameState.team === 1 ? "button-on-info"  : "button-on-danger"
+  }
   render() {
     return (
       <div>
@@ -265,6 +269,7 @@ class InfoBar extends Component {
           <RollBackButton
             onRollBack={this.props.onRollBack}
             shouldShow={this.props.type === "offline"}
+            colorClass={this.getButtonClass()}
           />
           <PlayAgainButton
             onPlayAgain={this.props.onPlayAgain}
@@ -272,10 +277,12 @@ class InfoBar extends Component {
             isGameCompleted={this.props.gameState.isGameEnded}
             isBackendConnected={this.props.gameState.isBackendConnected}
             isOpponentConnected={this.props.gameState.isOpponentConnected}
+            colorClass={this.getButtonClass()}
           />
           <MenuButton
             gameState={this.props.gameState}
             onMenuClick={this.props.onMenuClick}
+            colorClass={this.getButtonClass()}
           />
         </div>
       </div>
