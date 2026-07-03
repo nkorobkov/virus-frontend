@@ -31,22 +31,35 @@ class Game extends React.Component {
       team: props.team,
       roomId: props.roomId,
     };
+    this.timeouts = [];
     this.handleCellClick = this.handleCellClick.bind(this);
     this.handleRollBack = this.handleRollBack.bind(this);
   }
 
   async componentDidMount() {
     if (this.props.type === "offline") return;
+    if (this.props.type === "ai") {
+      this.setUpAiWorker();
+      return;
+    }
     await this.setUpSocket();
   }
+
+  setUpAiWorker = () => {
+    // The AI runs fully client-side, inside a web worker so long searches
+    // don't block the UI. It replies with the same message shape the
+    // websocket backend used, so handleSocketData handles both.
+    this.aiWorker = new Worker(new URL("../engine/aiWorker.js", import.meta.url), {
+      type: "module",
+    });
+    this.aiWorker.onmessage = (msg) => {
+      this.handleSocketData(msg.data);
+    };
+  };
 
   setUpSocket = () => {
     let url;
     const protocol = USE_SSL ? "wss://" : "ws://";
-    if (this.props.type === "ai") {
-      url = protocol + SERVER_URL + "/ws/ai/" + this.props.aiType + "/";
-    }
-    this.timeouts = [];
     if (this.props.type === "online") {
       url =
         protocol +
@@ -81,13 +94,16 @@ class Game extends React.Component {
   };
 
   async componentWillUnmount() {
-    console.log("unmounting, closing socket");
+    if (this.aiWorker) {
+      this.aiWorker.terminate();
+    }
     if (this.socket) {
+      console.log("unmounting, closing socket");
       // remove reconnection logic before intentional socket termination.
       this.socket.onclose = null;
       await this.socket.close();
-      this.timeouts.forEach(clearTimeout);
     }
+    this.timeouts.forEach(clearTimeout);
   }
 
   handleSocketData = async (data) => {
@@ -106,7 +122,7 @@ class Game extends React.Component {
     }
   };
 
-  handleReceivedMove(data) {
+  async handleReceivedMove(data) {
     if (this.state.toMove === this.state.team || this.state.isGameEnded) {
       throw new Error("move received when not expected");
     }
@@ -114,11 +130,13 @@ class Game extends React.Component {
     if (move.length > this.state.stepsLeft) {
       throw new Error("More moves than possible");
     }
-    move.forEach(async (step) => {
+    // Steps must be applied strictly one after another: each step's validity
+    // depends on the state produced by the previous one.
+    for (const step of move) {
       if (isStepValid(this.state, step[0], step[1])) {
         await this.makeStep(step[0], step[1]);
       }
-    });
+    }
   }
 
   handleRollBack = () => {
@@ -196,47 +214,54 @@ class Game extends React.Component {
     }
   };
 
-  makeStep = async (h, w) => {
-    const field = this.state.field.slice();
-    const history = this.state.history.slice();
-    let stepsLeft = this.state.stepsLeft - 1;
-    let toMove = this.state.toMove;
+  makeStep = (h, w) => {
+    // Functional setState so consecutive steps (the AI applies 3 in a row)
+    // each see the state produced by the previous one even when React
+    // batches updates; resolves once the step is committed.
+    return new Promise((resolve) => {
+      this.setState((prevState) => {
+        const field = prevState.field.slice();
+        const history = prevState.history.slice();
+        let stepsLeft = prevState.stepsLeft - 1;
+        let toMove = prevState.toMove;
 
-    let winner = this.state.winner;
-    let isGameEnded = this.state.isGameEnded;
+        let winner = prevState.winner;
+        let isGameEnded = prevState.isGameEnded;
 
-    field[h * this.sizeW + w] = getNextState(
-      field[h * this.sizeW + w],
-      this.state.toMove
-    );
-    history.push([h, w]);
+        field[h * this.sizeW + w] = getNextState(
+          field[h * this.sizeW + w],
+          prevState.toMove
+        );
+        history.push([h, w]);
 
-    // Switch move
-    if (stepsLeft === 0) {
-      toMove = -toMove;
-      stepsLeft = 3;
+        // Switch move
+        if (stepsLeft === 0) {
+          toMove = -toMove;
+          stepsLeft = 3;
 
-      //check  if game ended:
-      let new_state = { ...this.state };
-      new_state.field = field.slice();
-      new_state.history = history.slice();
-      new_state.stepsLeft = stepsLeft;
-      new_state.toMove = toMove;
+          //check  if game ended:
+          let new_state = { ...prevState };
+          new_state.field = field.slice();
+          new_state.history = history.slice();
+          new_state.stepsLeft = stepsLeft;
+          new_state.toMove = toMove;
 
-      if (!isValidMoveExists(new_state)) {
-        //end game
-        isGameEnded = true;
-        winner = -toMove;
-      }
-    }
+          if (!isValidMoveExists(new_state)) {
+            //end game
+            isGameEnded = true;
+            winner = -toMove;
+          }
+        }
 
-    return await this.setState({
-      toMove: toMove,
-      field: field,
-      stepsLeft: stepsLeft,
-      history: history,
-      isGameEnded: isGameEnded,
-      winner: winner,
+        return {
+          toMove: toMove,
+          field: field,
+          stepsLeft: stepsLeft,
+          history: history,
+          isGameEnded: isGameEnded,
+          winner: winner,
+        };
+      }, resolve);
     });
   };
 
@@ -244,16 +269,13 @@ class Game extends React.Component {
     //  don't call it on invalid or not on time moves.
     const aiMoves = this.state.team !== this.state.toMove;
     if (aiMoves && !this.state.isGameEnded) {
-      if (this.state.isBackendConnected) {
-        await this.socket.send(JSON.stringify(this.state));
-      } else {
-        console.log("state not sent, retrying in two seconds");
-        this.timeouts.push(
-          setTimeout(() => {
-            this.sendStateIfNeeded();
-          }, 2000)
-        );
-      }
+      this.aiWorker.postMessage({
+        field: this.state.field,
+        sizeH: this.state.sizeH,
+        sizeW: this.state.sizeW,
+        toMove: this.state.toMove,
+        aiType: this.props.aiType,
+      });
     }
   };
   sendMoveToOpponent = async (h, w) => {

@@ -212,7 +212,8 @@ class RoomId extends React.Component {
 
 class ConnectionStatus extends React.Component {
   render() {
-    if (this.props.type === "offline") {
+    // Only online games talk to a backend; offline and AI games are fully local.
+    if (this.props.type !== "online") {
       return <div />;
     }
 
