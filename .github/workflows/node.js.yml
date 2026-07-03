@@ -1,5 +1,7 @@
-# This workflow will do a clean install of node dependencies, build the source code and run tests
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+# Tests every push and PR; pushes to main also deploy the site to GitHub
+# Pages. Deployment publishes the build artifact straight from this workflow
+# (Pages source: "GitHub Actions"), replacing the old flow of pushing to a
+# gh-pages branch and letting GitHub's internal workflow deploy it.
 
 name: Node.js CI
 
@@ -8,15 +10,15 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  # Allows re-deploying manually from the Actions tab, e.g. after a flaky
+  # Pages outage, without pushing a new commit.
+  workflow_dispatch:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
-    # Needed for gh-pages to push the build output to the gh-pages branch.
     permissions:
-      contents: write
+      contents: read
 
     steps:
     - uses: actions/checkout@v4
@@ -28,10 +30,34 @@ jobs:
     - run: npm ci
     - run: npm test
     - run: npm run build --if-present
-    - name: deploy to gh pages
-      if: github.ref == 'refs/heads/main'
-      # gh-pages runs its own `git push`, so it needs an authenticated remote.
-      # The built-in GITHUB_TOKEN authorizes the push to the gh-pages branch.
-      run: npm run deploy -- -u "Virus War CI <nikita-ci@github.com>" -r "https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload build for Pages deployment
+      if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+      uses: actions/upload-pages-artifact@v5
+      with:
+        path: build
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    # Queue deployments instead of racing a still-running one.
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+
+    steps:
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v5
+      # "Deployment failed, try again later." is usually a transient GitHub
+      # error; retry once before failing the run.
+      continue-on-error: true
+    - name: Retry deploy once
+      if: steps.deployment.outcome == 'failure'
+      uses: actions/deploy-pages@v5
