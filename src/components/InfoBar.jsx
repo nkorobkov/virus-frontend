@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import resolveImagePath from "../utils/styleUtils";
+import { getInviteLink } from "../utils/p2p";
 
 class TeamName extends React.Component {
   render() {
@@ -159,8 +160,7 @@ class RollBackButton extends React.Component {
 class PlayAgainButton extends React.Component {
   render() {
     const text = this.props.isGameCompleted ? "Play Again" : "Resign";
-    const isEnabled =
-      this.props.isBackendConnected && this.props.isOpponentConnected;
+    const isEnabled = this.props.isOpponentConnected;
     if (this.props.shouldShow) {
       return (
         <div
@@ -193,15 +193,18 @@ class RoomId extends React.Component {
             </span>
             <button
               className="tag is-large button"
+              title="Copy invite link"
               onClick={() => {
-                navigator.clipboard.writeText(this.props.roomId);
+                navigator.clipboard.writeText(
+                  getInviteLink(this.props.roomId)
+                );
                 this.setState({ copied: true });
                 setTimeout(() => this.setState({ copied: false }), 3000);
               }}
             >
-              📋
+              🔗
             </button>
-            {this.state.copied ? "Copied" : ""}
+            {this.state.copied ? "Invite link copied" : ""}
           </span>
         </div>
       );
@@ -210,38 +213,60 @@ class RoomId extends React.Component {
   }
 }
 
+// Practical tips shown while the opponent is not connected.
+class ConnectionTroubleshooting extends React.Component {
+  render() {
+    return (
+      <details className="connection-troubleshooting">
+        <summary>Trouble connecting?</summary>
+        <ul>
+          <li>
+            Your friend must have the game open too — send them the invite
+            link (🔗) and keep this page open.
+          </li>
+          <li>Check you are both in the same room number.</li>
+          <li>Turn off VPNs — they often block the connection.</li>
+          <li>
+            Try disabling ad-blockers, or switch to another network — a phone
+            hotspot usually works.
+          </li>
+          <li>Still stuck? Both reload the page and try again.</li>
+        </ul>
+      </details>
+    );
+  }
+}
+
 class ConnectionStatus extends React.Component {
   render() {
-    // Only online games talk to a backend; offline and AI games are fully local.
+    // Only online games are networked; offline and AI games are fully local.
     if (this.props.type !== "online") {
       return <div />;
     }
 
-    const lightClassBackend = this.props.isBackendConnected ? "green" : "red";
+    const lightClassSignaling = this.props.isSignalingConnected
+      ? "green"
+      : "red";
     const lightClassOpponent = this.props.isOpponentConnected ? "green" : "red";
-
-    let backend = (
-      <span>
-        <span className={lightClassBackend + " dot"} /> backend is{" "}
-        {this.props.isBackendConnected ? "" : "not "}connected
-      </span>
-    );
-
-    let opponent =
-      this.props.type === "online" ? (
-        <span>
-          <span className={lightClassOpponent + " dot"} /> opponent is{" "}
-          {this.props.isOpponentConnected ? "" : "not "}connected
-        </span>
-      ) : (
-        <span />
-      );
 
     return (
       <div className="connection-status">
-        {backend}
+        <span>
+          <span className={lightClassSignaling + " dot"} /> matchmaking is{" "}
+          {this.props.isSignalingConnected ? "" : "not "}connected
+        </span>
         <br />
-        {opponent}
+        <span>
+          <span className={lightClassOpponent + " dot"} /> opponent is{" "}
+          {this.props.isOpponentConnected
+            ? "connected"
+            : "not connected — waiting"}
+        </span>
+        {this.props.isOpponentConnected ? (
+          <div />
+        ) : (
+          <ConnectionTroubleshooting />
+        )}
       </div>
     );
   }
@@ -256,7 +281,7 @@ class InfoBar extends Component {
     return (
       <div>
         <ConnectionStatus
-          isBackendConnected={this.props.gameState.isBackendConnected}
+          isSignalingConnected={this.props.gameState.isSignalingConnected}
           isOpponentConnected={this.props.gameState.isOpponentConnected}
           type={this.props.type}
         />
@@ -276,7 +301,6 @@ class InfoBar extends Component {
             onPlayAgain={this.props.onPlayAgain}
             shouldShow={this.props.type === "online"}
             isGameCompleted={this.props.gameState.isGameEnded}
-            isBackendConnected={this.props.gameState.isBackendConnected}
             isOpponentConnected={this.props.gameState.isOpponentConnected}
             colorClass={this.getButtonClass()}
           />

@@ -2,6 +2,13 @@ import React from "react";
 import Game from "./components/Game";
 import Menu from "./components/Menu";
 import Footer from "./components/Footer";
+import {
+  getRoomIdFromUrl,
+  setRoomIdInUrl,
+  clearRoomIdFromUrl,
+  rememberTeam,
+  recallTeam,
+} from "./utils/p2p";
 
 class App extends React.Component {
   constructor(props) {
@@ -11,11 +18,25 @@ class App extends React.Component {
     this.handleNavigation = this.handleNavigation.bind(this);
   }
 
+  componentDidMount() {
+    // ?room=1234 in the URL means either an invite link (join as the second
+    // player) or a page reload mid-game (rejoin as whichever team this tab
+    // was playing).
+    const roomId = getRoomIdFromUrl();
+    if (roomId) {
+      this.handleOnlineGame(recallTeam(roomId) ?? -1, roomId);
+    }
+  }
+
   handleNavigation = (page) => {
     this.setState({ activePage: page });
   };
 
   handleOnlineGame = (team, roomId) => {
+    // Keep the room in the URL and the team in per-tab storage so a reload
+    // reconnects to the game instead of dropping to the menu.
+    setRoomIdInUrl(roomId);
+    rememberTeam(roomId, team);
     this.setState({
       activePage: "online",
       team: team,
@@ -24,6 +45,7 @@ class App extends React.Component {
   };
 
   handleMenuClick = () => {
+    clearRoomIdFromUrl();
     this.setState({ activePage: "menu" });
   };
 

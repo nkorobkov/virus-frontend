@@ -1,16 +1,14 @@
 import React from "react";
 import ReactModal from "react-modal";
 import Rules from "./Rules";
-import axios from "axios";
 import {
-  SERVER_URL,
-  USE_SSL,
   ANY_AI_ENABLED,
   EASY_AI_ENABLED,
   MEDIUM_AI_ENABLED,
   HARD_AI_ENABLED,
   ONLINE_MODE_ENABLED,
 } from "../utils/constants";
+import { generateRoomId, isValidRoomId } from "../utils/p2p";
 
 ReactModal.setAppElement("#root");
 
@@ -22,8 +20,6 @@ class Menu extends React.Component {
       showRules: false,
       roomToJoin: "",
       canJoin: false,
-      joinLoading: false,
-      notification: "",
     };
   }
   handleToggleRules() {
@@ -36,38 +32,18 @@ class Menu extends React.Component {
     const validatedId = proposedId.replace(/\D/g, "").slice(0, 4);
     this.setState({
       roomToJoin: validatedId,
-      canJoin: validatedId.length === 4,
+      canJoin: isValidRoomId(validatedId),
     });
   };
 
-  handleJoinOnlineClick = async () => {
+  // Games are peer-to-peer, so there is no server that knows which rooms
+  // exist: joining just enters the room and waits for the other player.
+  handleJoinOnlineClick = () => {
     if (!this.state.canJoin) return; // not in format
-    this.setState({ isJoinLoading: true });
-    if (await this.checkIfRoomCanBeJoined(this.state.roomToJoin)) {
-      await this.setState({ isJoinLoading: false });
-      this.props.onOnlineClick(null, this.state.roomToJoin);
-    } else {
-      await this.setState({ isJoinLoading: false });
-      console.log("there is no room with this id");
-      this.showNotification(
-        "Room with id " + this.state.roomToJoin + " does not exist 🌚"
-      );
-    }
+    this.props.onOnlineClick(-1, this.state.roomToJoin);
   };
   handleCreateOnlineClick = (team) => {
-    this.props.onOnlineClick(team);
-  };
-
-  checkIfRoomCanBeJoined = async (roomId) => {
-    const response = await axios.get(
-      (USE_SSL ? "https://" : "http://") + SERVER_URL + "/room/" + roomId + "/"
-    );
-    return response.data.exists && response.data.teams_joined.length < 2;
-  };
-
-  showNotification = (message) => {
-    this.setState({ notification: message });
-    setTimeout(this.setState.bind(this, { notification: "" }), 5000);
+    this.props.onOnlineClick(team, generateRoomId());
   };
 
   render() {
@@ -87,22 +63,6 @@ class Menu extends React.Component {
             </div>
           </div>
         </div>
-        {this.state.notification ? (
-          <div className="tile is-ancestor">
-            <div className="tile is-parent">
-              <div className="tile is-parent is-12">
-                <div className="tile is-child notification">
-                  <div className="has-text-centered">
-                    <div>{this.state.notification}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div />
-        )}
-
         <div className="title is-ancestor">
           <div className="tile">
             <div className="tile is-parent ">
@@ -220,10 +180,7 @@ class Menu extends React.Component {
                     onChange={this.handleRoomIdChange}
                   ></input>
                   <div
-                    className={
-                      (this.state.isJoinLoading ? "is-loading " : "") +
-                      "button menu-button button-on-info"
-                    }
+                    className="button menu-button button-on-info"
                     disabled={!this.state.canJoin}
                     onClick={this.handleJoinOnlineClick.bind(this)}
                   >
@@ -231,6 +188,11 @@ class Menu extends React.Component {
                       🎟️
                     </span>{" "}
                     Join by code
+                  </div>
+                  <div className="label">
+                    <br />
+                    Games are peer-to-peer: create a game, send the invite
+                    link to a friend, and keep the page open while they join.
                   </div>
                 </article>
               </div>

@@ -1,6 +1,5 @@
 // Web worker entry point: runs the AI search off the main thread so multi-
-// second searches don't freeze the UI. Speaks the same message shape the
-// websocket AI backend used: receives the game state, replies with
+// second searches don't freeze the UI. Receives the game state, replies with
 // {type: "move", move: [[h, w], ...]}.
 import { getAiMove } from "./aiPolicies";
 

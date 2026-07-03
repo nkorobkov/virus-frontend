@@ -282,6 +282,27 @@
 
 }
 
+.connection-troubleshooting{
+  margin-top: 8px;
+  font-size: 0.85rem;
+  text-align: left;
+
+  summary{
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  ul{
+    margin-top: 8px;
+    padding-left: 1.2em;
+    list-style: disc;
+
+    li{
+      margin-bottom: 6px;
+    }
+  }
+}
+
 .dot{
   height: 12px;
   width: 12px;

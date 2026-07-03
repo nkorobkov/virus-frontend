@@ -14,28 +14,6 @@ class Footer extends React.Component {
             </a>{" "}
             license.
           </p>
-          <p>
-            <a href="https://github.com/nkorobkov/virus-frontend">
-              Source Frontend
-            </a>{" "}
-            ||
-            <a href="https://github.com/nkorobkov/virus-game">
-              {" "}
-              Source Backend
-            </a>{" "}
-            ||
-            <a href="https://nkorobkov.com/projects/virus">
-              {" "}
-              Project Description
-            </a>
-          </p>
-
-          {/*<p>*/}
-          {/*Share:*/}
-          {/*<a href="https://github.com/nkorobkov/virus-frontend">Facebook</a> ||*/}
-          {/*<a href="https://github.com/nkorobkov/virus-game"> Twitter</a> ||*/}
-          {/*<a href="https://nkorobkov.com/projects/virus"> Mail</a>*/}
-          {/*</p>*/}
         </div>
       </footer>
     );

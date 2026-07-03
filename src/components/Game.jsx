@@ -1,5 +1,4 @@
 import React from "react";
-import axios from "axios";
 import Field from "./Field";
 import InfoBar from "./InfoBar";
 import {
@@ -7,120 +6,152 @@ import {
   getNextState,
   isValidMoveExists,
 } from "../utils/gameEngine";
-import { SERVER_URL, USE_SSL } from "../utils/constants";
+import {
+  connectToRoom,
+  isSignalingConnected,
+  saveGameState,
+  loadGameState,
+  clearGameState,
+} from "../utils/p2p";
+
+function initialGameState(sizeH, sizeW) {
+  const field = new Array(sizeH * sizeW).fill(0);
+  field[0] = 1;
+  field[sizeH * sizeW - 1] = -1;
+  return {
+    field: field,
+    toMove: 1,
+    stepsLeft: 2,
+    history: [],
+    isGameEnded: false,
+    winner: null,
+  };
+}
+
+// The subset of state two peers need to agree on to resume a game.
+function sharedGameState(state) {
+  return {
+    field: state.field,
+    toMove: state.toMove,
+    stepsLeft: state.stepsLeft,
+    history: state.history,
+    isGameEnded: state.isGameEnded,
+    winner: state.winner,
+  };
+}
 
 class Game extends React.Component {
   constructor(props) {
     super(props);
     this.sizeH = 8;
     this.sizeW = 8;
-    let field = new Array(this.sizeH * this.sizeW).fill(0);
-    field[0] = 1;
-    field[this.sizeH * this.sizeW - 1] = -1;
+    // An online game that this tab already played (page reload) resumes from
+    // the locally saved board; the opponent's sync corrects it if they are
+    // further ahead.
+    const restored =
+      props.type === "online" ? loadGameState(props.roomId) : null;
     this.state = {
-      field: field,
-      toMove: 1,
-      stepsLeft: 2,
+      ...initialGameState(this.sizeH, this.sizeW),
+      ...restored,
       sizeH: this.sizeH,
       sizeW: this.sizeW,
-      history: [],
-      isGameEnded: false,
-      winner: null,
-      isBackendConnected: false,
+      isSignalingConnected: false,
       isOpponentConnected: false,
       team: props.team,
       roomId: props.roomId,
     };
-    this.timeouts = [];
     this.handleCellClick = this.handleCellClick.bind(this);
     this.handleRollBack = this.handleRollBack.bind(this);
   }
 
-  async componentDidMount() {
+  componentDidMount() {
     if (this.props.type === "offline") return;
     if (this.props.type === "ai") {
       this.setUpAiWorker();
       return;
     }
-    await this.setUpSocket();
+    this.setUpPeerRoom();
   }
 
   setUpAiWorker = () => {
     // The AI runs fully client-side, inside a web worker so long searches
-    // don't block the UI. It replies with the same message shape the
-    // websocket backend used, so handleSocketData handles both.
+    // don't block the UI. It replies with {type: "move", move: [[h, w], ...]}.
     this.aiWorker = new Worker(new URL("../engine/aiWorker.js", import.meta.url), {
       type: "module",
     });
-    this.aiWorker.onmessage = (msg) => {
-      this.handleSocketData(msg.data);
+    this.aiWorker.onmessage = async (msg) => {
+      if (msg.data["type"] === "move") {
+        await this.handleReceivedMove(msg.data);
+      }
     };
   };
 
-  setUpSocket = () => {
-    let url;
-    const protocol = USE_SSL ? "wss://" : "ws://";
+  setUpPeerRoom = () => {
+    // The opponent is the first peer to show up; any further peers (someone
+    // opening the invite link twice, a stranger guessing the code) are
+    // ignored so a room never holds more than one game.
+    this.opponentPeerId = null;
+    this.room = connectToRoom(this.state.roomId);
+
+    this.room.onMove(async (move, peerId) => {
+      if (peerId !== this.opponentPeerId) return;
+      await this.handleReceivedMove({ move });
+    });
+    this.room.onRestart(async (data, peerId) => {
+      if (peerId !== this.opponentPeerId) return;
+      await this.setState(initialGameState(this.sizeH, this.sizeW));
+    });
+    this.room.onSync(async (remoteState, peerId) => {
+      if (peerId !== this.opponentPeerId) return;
+      // After a page reload one side comes back with a fresh board; whichever
+      // peer has seen more of the game is the source of truth.
+      if (remoteState.history.length > this.state.history.length) {
+        await this.setState(sharedGameState(remoteState));
+      }
+    });
+    this.room.onPeerJoin((peerId) => {
+      if (this.opponentPeerId !== null) return;
+      this.opponentPeerId = peerId;
+      this.setState({ isOpponentConnected: true });
+      // If we are mid-game, the opponent just reconnected: catch them up.
+      if (this.state.history.length > 0) {
+        this.room.sendSync(sharedGameState(this.state), peerId);
+      }
+    });
+    this.room.onPeerLeave((peerId) => {
+      if (peerId !== this.opponentPeerId) return;
+      this.opponentPeerId = null;
+      this.setState({ isOpponentConnected: false });
+    });
+
+    // Trystero reconnects to relays on its own; we just poll the socket
+    // states to keep the status light honest.
+    this.signalingPollId = setInterval(() => {
+      const connected = isSignalingConnected();
+      if (connected !== this.state.isSignalingConnected) {
+        this.setState({ isSignalingConnected: connected });
+      }
+    }, 1000);
+  };
+
+  componentDidUpdate() {
     if (this.props.type === "online") {
-      url =
-        protocol +
-        SERVER_URL +
-        "/ws/room/" +
-        (this.state.roomId || "") +
-        "?team=" +
-        this.state.team;
+      saveGameState(this.state.roomId, sharedGameState(this.state));
     }
-    console.log("connecting to the backend", url);
-    this.socket = new WebSocket(url);
-    this.socket.onopen = () => {
-      this.setState({ isBackendConnected: true });
-      console.log("backend connected");
-    };
-    this.socket.onmessage = (msg) => {
-      this.handleSocketData(JSON.parse(msg.data));
-    };
-    this.socket.onclose = (msg) => {
-      console.log(
-        "Connection unexpectedly closed with code:",
-        msg.code,
-        "retrying in two secconds"
-      );
-      this.setState({ isBackendConnected: false });
-      this.timeouts.push(
-        setTimeout(() => {
-          this.setUpSocket();
-        }, 2000)
-      );
-    };
-  };
+  }
 
-  async componentWillUnmount() {
+  componentWillUnmount() {
     if (this.aiWorker) {
       this.aiWorker.terminate();
     }
-    if (this.socket) {
-      console.log("unmounting, closing socket");
-      // remove reconnection logic before intentional socket termination.
-      this.socket.onclose = null;
-      await this.socket.close();
+    if (this.room) {
+      this.room.leave();
+      clearInterval(this.signalingPollId);
+      // Unmount only happens on a deliberate exit to the menu (reloads skip
+      // it), so the game is abandoned and must not resurface later.
+      clearGameState(this.state.roomId);
     }
-    this.timeouts.forEach(clearTimeout);
   }
-
-  handleSocketData = async (data) => {
-    if (data["type"] === "move") {
-      await this.handleReceivedMove(data);
-    }
-    if (data["type"] === "stateUpdate") {
-      await this.setState(data["state"]);
-    }
-    if (data["type"] === "resetState") {
-      await this.resetStateFromField(data);
-    }
-    if (data["type"] === "error") {
-      // If received error from backend, thorw back to menu
-      await this.props.onMenuClick();
-    }
-  };
 
   async handleReceivedMove(data) {
     if (this.state.toMove === this.state.team || this.state.isGameEnded) {
@@ -180,23 +211,18 @@ class Game extends React.Component {
 
   handlePlayAgain = async () => {
     if (this.props.type !== "online") return;
-    // Server should restart it's internal state and then send requests to reset state on clients
-    await axios.post(
-      (USE_SSL ? "https://" : "http://") +
-        SERVER_URL +
-        "/room/" +
-        this.state.roomId +
-        "/restart"
-    );
+    // Both peers reset to a fresh board; mid-game this doubles as resigning.
+    this.room.sendRestart({}, this.opponentPeerId);
+    await this.setState(initialGameState(this.sizeH, this.sizeW));
   };
 
   handleCellClick = async (h, w) => {
     const playerCantMoveNow =
       this.state.toMove !== this.state.team && this.props.type !== "offline";
-    // We won't allow clicking on the field if opponent is not connected and game is not fully ready.
+    // We won't allow clicking on the field until the opponent's browser is
+    // connected: moves made alone would never reach them.
     const onlineGameNotReady =
-      this.props.type === "online" &&
-      (!this.state.isBackendConnected || !this.state.isOpponentConnected);
+      this.props.type === "online" && !this.state.isOpponentConnected;
     if (
       playerCantMoveNow ||
       onlineGameNotReady ||
@@ -279,40 +305,7 @@ class Game extends React.Component {
     }
   };
   sendMoveToOpponent = async (h, w) => {
-    await this.socket.send(
-      JSON.stringify({
-        type: "move",
-        move: [[h, w]],
-        state: this.state,
-      })
-    );
-  };
-
-  resetStateFromField = async (data) => {
-    const field = data["field"];
-    let winner = null;
-    let isGameEnded = false;
-    // number of moves made = abs value in all cells -2 for initial seed cells
-    const movesMade = field.map(Math.abs).reduce((x, y) => x + y, 0) - 2;
-    const history = this.state.history.slice(0, movesMade);
-    const toMove = Math.floor((movesMade + 1) / 3) % 2 === 0 ? 1 : -1;
-    const stepsLeft = 3 - ((movesMade + 1) % 3);
-    const newState = {
-      history: history,
-      field: field,
-      toMove: toMove,
-      stepsLeft: stepsLeft,
-    };
-    if (!isValidMoveExists({ ...this.state, ...newState })) {
-      //end game
-      isGameEnded = true;
-      winner = -toMove;
-    }
-    this.setState({
-      ...newState,
-      isGameEnded: isGameEnded,
-      winner: winner,
-    });
+    await this.room.sendMove([[h, w]], this.opponentPeerId);
   };
 
   getInfoBarColor = () => {
