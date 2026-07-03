@@ -1,3 +1,5 @@
+@use "sass:color";
+
 .menu-hero {
   margin-top: 10%;
 }
@@ -55,7 +57,7 @@
 
 .blue-name {
   color: $game-blue;
-  border-color: darken($game-blue, 20%);
+  border-color: color.adjust($game-blue, $lightness: -20%);
 
 }
 
@@ -213,7 +215,7 @@
 }
 
 .button-on-danger {
-  $hov-col: darken($danger, 20%);
+  $hov-col: color.adjust($danger, $lightness: -20%);
 
   color: $hov-col;
 
@@ -232,7 +234,7 @@
 }
 
 .button-on-info {
-  $hov-col: darken($info, 20%);
+  $hov-col: color.adjust($info, $lightness: -20%);
 
   color: $hov-col;
 
@@ -251,7 +253,7 @@
 }
 
 .button-on-warning {
-  $hov-col: darken($warning, 20%);
+  $hov-col: color.adjust($warning, $lightness: -20%);
 
   color: $hov-col;
 
@@ -269,7 +271,7 @@
   }
 
   &:disabled{
-    background-color: darken($game-dark, 20%);
+    background-color: color.adjust($game-dark, $lightness: -20%);
     color: $white;
     border-color: $white;
   }
@@ -298,7 +300,7 @@
 
 .my-footer{
   background-color: $game-white;
-  color: darken($game-yellow,  20%);
+  color: color.adjust($game-yellow, $lightness: -20%);
   font-weight: 600;
   font-size: 0.8rem;
   padding: 6rem 1.5rem 5rem;
