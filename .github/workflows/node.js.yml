@@ -5,9 +5,9 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   build:
@@ -29,7 +29,7 @@ jobs:
     - run: npm test
     - run: npm run build --if-present
     - name: deploy to gh pages
-      if: github.ref == 'refs/heads/master'
+      if: github.ref == 'refs/heads/main'
       # gh-pages runs its own `git push`, so it needs an authenticated remote.
       # The built-in GITHUB_TOKEN authorizes the push to the gh-pages branch.
       run: npm run deploy -- -u "Virus War CI <nikita-ci@github.com>" -r "https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
